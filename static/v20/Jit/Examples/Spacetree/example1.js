@@ -22,19 +22,51 @@ var Log = {
       this.elem = document.getElementById('log');
     this.elem.innerHTML = text;
     this.elem.style.left = (500 - this.elem.offsetWidth / 2) + 'px';
+    console.log(text);
   }
 };
+
+//Implement a node rendering function called 'nodeline' that plots a straight line
+//when contracting or expanding a subtree.
+$jit.ST.Plot.NodeTypes.implement({
+    'roundrect': {
+        'render': function (node, canvas, animating) {
+            var pos = node.pos.getc(true), nconfig = this.node, data = node.data;
+            var width = nconfig.width, height = nconfig.height;
+            var algnPos = this.getAlignedPos(pos, width, height);
+            var ctx = canvas.getCtx(), ort = this.config.orientation;
+            ctx.beginPath();
+
+            var r = 4; //corner radius
+            var x = algnPos.x;
+            var y = algnPos.y;
+            var h = height;
+            var w = width;
+
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.fill();
+        }
+    }
+});
 
 
 function init(){
     //init data
     var json = {
         id: "node02",
-        name: "0.2",
+        name: "Douglas R. Horner of MIE, Inc.",
         data: {},
         children: [{
             id: "node13",
-            name: "1.3",
+            name: "Eric",
             data: {},
             children: [{
                 id: "node24",
@@ -144,7 +176,7 @@ function init(){
             }]
         }, {
             id: "node125",
-            name: "1.25",
+            name: "Matt",
             data: {},
             children: [{
                 id: "node226",
@@ -344,7 +376,7 @@ function init(){
             }]
         }, {
             id: "node165",
-            name: "1.65",
+            name: "Jason",
             data: {},
             children: [{
                 id: "node266",
@@ -669,7 +701,7 @@ function init(){
             }]
         }, {
             id: "node1130",
-            name: "1.130",
+            name: "Bill",
             data: {},
             children: [{
                 id: "node2131",
@@ -766,7 +798,11 @@ function init(){
         //id of viz container element
         injectInto: 'infovis',
         //set duration for the animation
-        duration: 800,
+        orientation: 'top',
+        levelsToShow: 1,
+        offsetY: 0,
+        //multitree: true,
+        duration: 200,
         //set animation transition type
         transition: $jit.Trans.Quart.easeInOut,
         //set distance between node and its children
@@ -780,9 +816,9 @@ function init(){
         //set overridable=true for styling individual
         //nodes or edges
         Node: {
-            height: 20,
-            width: 60,
-            type: 'rectangle',
+            height: 131,
+            width: 121,
+            type: 'roundrect',
             color: '#aaa',
             overridable: true
         },
@@ -815,8 +851,8 @@ function init(){
             };
             //set label styles
             var style = label.style;
-            style.width = 60 + 'px';
-            style.height = 17 + 'px';            
+            style.width = 121 + 'px';
+            style.height = 131 + 'px';
             style.cursor = 'pointer';
             style.color = '#333';
             style.fontSize = '0.8em';
@@ -873,6 +909,7 @@ function init(){
     st.geom.translate(new $jit.Complex(-200, 0), "current");
     //emulate a click on the root node.
     st.onClick(st.root);
+//    st.switchPosition("top");
     //end
     //Add event handlers to switch spacetree orientation.
     var top = $jit.id('r-top'), 
@@ -880,8 +917,7 @@ function init(){
         bottom = $jit.id('r-bottom'), 
         right = $jit.id('r-right'),
         normal = $jit.id('s-normal');
-        
-    
+
     function changeHandler() {
         if(this.checked) {
             top.disabled = bottom.disabled = right.disabled = left.disabled = true;
@@ -892,7 +928,6 @@ function init(){
             });
         }
     };
-    
     top.onchange = left.onchange = bottom.onchange = right.onchange = changeHandler;
     //end
 
